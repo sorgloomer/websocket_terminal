@@ -1,0 +1,3 @@
+#!/usr/bin/env python3
+import .web_terminal
+web_terminal.main()
