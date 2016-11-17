@@ -44,21 +44,29 @@ def create_terminal(obj):
     return kind, EncodedTerminal.EncodedTerminal(_raw(), encoding)
 
 
+def parse_query(qstr):
+    return {k: v[0] for k, v in urllib.parse.parse_qs(qstr).items()}
+
+
 @eventlet.websocket.WebSocketWSGI
 def handle_wssh(ws):
     app.logger.debug('Creating terminal with remote {remote}'.format(
         remote=ws.environ.get('REMOTE_ADDR'),
     ))
 
-    binding = WebsocketBinding.WebsocketBinding(ws)
-    query = {k: v[0] for k, v in urllib.parse.parse_qs(ws.environ.get('QUERY_STRING', '')).items()}
+    ws_binding = WebsocketBinding.WebsocketBinding(ws)
+    query = parse_query(ws.environ.get('QUERY_STRING', ''))
+    terminal = None
     try:
         kind, terminal = create_terminal(query)
-        binding.send('Connected to %s\r\n' % (kind,))
-        wspty.pipe.pipe(binding, terminal)
+        ws_binding.send('Connected to %s\r\n' % (kind,))
+        wspty.pipe.pipe(ws_binding, terminal)
     except BaseException as e:
-        binding.send_error(e)
+        ws_binding.send_error(e)
         raise
+    finally:
+        if terminal:
+            terminal.close()
 
     return ''
 
