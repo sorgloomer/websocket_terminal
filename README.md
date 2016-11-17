@@ -19,6 +19,7 @@ Open `http://localhost:5002?kind=ssh&username=<username>&password=<password>` in
 
 ### 3. Enjoy
 
+![Screenshot of mc in the browser](docs/ss_mc.png)
 
 # Remarks
 
