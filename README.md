@@ -15,7 +15,19 @@ python3 websocket_terminal.py
 
 ### 2. Navigate browser
 
-Open `http://localhost:5002?kind=ssh&username=<username>&password=<password>` in a browser.
+Open one of the following links in a browser:
+
+Local ssh:
+
+```
+http://localhost:5002?kind=ssh&username=<username>&password=<password>
+```
+
+Remote ssh:
+
+```
+http://localhost:5002?kind=ssh&username=<username>&password=<password>&hostname=<ssh_hostname>
+```
 
 ### 3. Enjoy
 
