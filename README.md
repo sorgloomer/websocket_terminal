@@ -9,6 +9,7 @@ A cross-platform python3 server that bridges either ssh or raw tcp to the browse
 
 ```
 git clone https://github.com/sorgloomer/websocket_terminal.git
+cd websocket_terminal
 pip3 install -r requirements.txt
 python3 websocket_terminal.py
 ```
