@@ -35,7 +35,7 @@ class SshTerminal(BaseTerminal):
         return self._channel.recv(count)
 
     def close(self):
-        return self._channel.close()
+        return self._ssh.close()
 
     def resize(self, cols, rows):
         return self._channel.resize_pty(cols, rows)

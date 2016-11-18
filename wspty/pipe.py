@@ -2,11 +2,9 @@ import eventlet
 import eventlet.event
 
 
-class GreenletAll:
+class GreenletRace:
     def __init__(self, tasks):
-        tasks = list(tasks)
         self._event = eventlet.event.Event()
-        self._running_count = len(tasks)
         self._tasks = [eventlet.spawn(self._wrap, fn) for fn in tasks]
 
     def _resolve(self, value=None):
@@ -19,10 +17,7 @@ class GreenletAll:
 
     def _wrap(self, fn):
         try:
-            fn()
-            self._running_count -= 1
-            if self._running_count <= 0:
-                self._resolve()
+            self._resolve(fn())
         except BaseException as e:
             self._reject(e)
 
@@ -42,7 +37,7 @@ class TerminalPipe:
 
     def pipe(self):
         try:
-            self._tasks = GreenletAll([
+            self._tasks = GreenletRace([
                 self._pty_to_ws,
                 self._ws_to_pty
             ])
@@ -53,11 +48,15 @@ class TerminalPipe:
     def _pty_to_ws(self):
         while True:
             data = self.terminal.read()
+            if not data:
+                break
             self.ws_binding.send(data)
 
     def _ws_to_pty(self):
         while True:
             msg = self.ws_binding.receive()
+            if not msg:
+                break
             if msg.resize is not None:
                 self.terminal.resize(*msg.resize)
             if msg.data is not None:

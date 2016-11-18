@@ -68,7 +68,7 @@ function openTerminal() {
             client.resize(term.cols, term.rows);
         },
         onClose: function() {
-            term.write('\r\nConnection Reset By Peer');
+            term.write('\r\nConnection closed by peer');
         },
         onData: function(data) {
             term.write(data);

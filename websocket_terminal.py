@@ -30,7 +30,8 @@ def create_terminal(obj):
     password = obj.get('password')
     term = obj.get('term')
     encoding = obj.get('encoding', 'utf8')
-    def _raw():
+
+    def _binary():
         if kind == 'ssh':
             return SshTerminal.SshTerminal(hostname, port, username, password, term)
         if kind == 'raw':
@@ -41,16 +42,20 @@ def create_terminal(obj):
         if kind == 'echo':
             return EchoTerminal.EchoTerminal()
         raise NotImplemented('kind: %s' % kind)
-    return kind, EncodedTerminal.EncodedTerminal(_raw(), encoding)
+    return kind, EncodedTerminal.EncodedTerminal(_binary(), encoding)
 
 
 def parse_query(qstr):
     return {k: v[0] for k, v in urllib.parse.parse_qs(qstr).items()}
 
 
+def debug(s):
+    app.logger.debug(s)
+
+
 @eventlet.websocket.WebSocketWSGI
 def handle_wssh(ws):
-    app.logger.debug('Creating terminal with remote {remote}'.format(
+    debug('Creating terminal with remote {remote}'.format(
         remote=ws.environ.get('REMOTE_ADDR'),
     ))
 
@@ -68,6 +73,9 @@ def handle_wssh(ws):
         if terminal:
             terminal.close()
 
+    debug('Closing terminal normally with remote {remote}'.format(
+        remote=ws.environ.get('REMOTE_ADDR'),
+    ))
     return ''
 
 
