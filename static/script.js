@@ -48,8 +48,8 @@ function openTerminal() {
     }));
     fitTerminal();
     
-    term.on('key', function(key) {
-        client.send(key);
+    term.on('data', function(data) {
+        client.send(data);
     });
     term.on('resize', function(geom) {
         client.resize(geom.cols, geom.rows);
