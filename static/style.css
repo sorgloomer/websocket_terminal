@@ -15,3 +15,8 @@ html, body, #term-container {
   position: relative;
   padding: 5px;
 }
+
+/* https://github.com/sourcelair/xterm.js/issues/357 */
+.terminal .xterm-helper-textarea {
+  top: 0 !important;
+}
