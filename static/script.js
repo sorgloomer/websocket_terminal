@@ -56,7 +56,8 @@ function openTerminal() {
     });
     term.write('Connecting...\r\n');
     
-    var endpoint = 'ws://' + location.host + '/wssh' + location.search;
+    var wsProtocol = location.protocol === 'http:' ? 'ws' : 'wss';
+    var endpoint = wsProtocol + '://' + location.host + '/wssh' + location.search;
     client.connect({
         ws: new WebSocket(endpoint),
         onError: function(error) {
