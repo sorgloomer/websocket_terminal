@@ -5,16 +5,26 @@ function openTerminal() {
     var container = document.getElementById('term-container');
     term.open(container);
     
+    
+    
     function debounce(fn) {
-        var tid = null;
+        // throttle to 4 calls per second,
+        // call 3 more times after last debounced call 
+        // because zoom seems to be asynchronous in chrome,
+        // and character measurement returns wrong values for
+        // a short time
+        var tid = null, counter = 0;
         return function() {
-            if (tid !== null) {
-                clearTimeout(tid);
+            counter = 3;
+            if (tid === null) {
+              tid = setInterval(function() {
+                  if (--counter < 1) {
+                      clearTimeout(tid);
+                      tid = null;
+                  }
+                  fn();
+              }, 250);
             }
-            tid = setTimeout(function() {
-                tid = null;
-                fn();
-            }, 50);
         };
     }
     
@@ -43,9 +53,13 @@ function openTerminal() {
         term.resize(cols, rows);
     }
 
-    window.addEventListener('resize', debounce(function() { 
+    var debouncedFitTerminal = debounce(function() { 
         fitTerminal();
-    }));
+    });
+    window.addEventListener('resize', function() {
+      setTimeout(debouncedFitTerminal, 1000);
+      debouncedFitTerminal();
+    });
     fitTerminal();
     
     term.on('data', function(data) {
