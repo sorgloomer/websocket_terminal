@@ -1,14 +1,11 @@
 class BaseTerminal:
-    def __init__(self):
-        pass
-
-    def send(self, bytes):
+    def send(self, msg: bytes):
         raise NotImplementedError('send')
 
-    def resize(self, cols, rows):
+    def resize(self, cols: int, rows: int):
         pass
 
-    def recv(self, count=None):
+    def recv(self, count: int=None):
         raise NotImplementedError('recv')
 
     def close(self):

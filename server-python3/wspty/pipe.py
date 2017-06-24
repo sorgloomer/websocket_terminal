@@ -1,6 +1,9 @@
 import eventlet
 import eventlet.event
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class GreenletRace:
     def __init__(self, tasks):
@@ -25,8 +28,8 @@ class GreenletRace:
         self._event.wait()
 
     def kill_all(self):
-        for g in self._tasks:
-            g.kill()
+        for greenthread in self._tasks:
+            greenthread.kill()
 
 
 class TerminalPipe:

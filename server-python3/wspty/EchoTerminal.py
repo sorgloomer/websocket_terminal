@@ -5,7 +5,7 @@ from eventlet.queue import Queue
 class EchoTerminal(BaseTerminal):
     def __init__(self):
         super().__init__()
-        self._queue = Queue(1024)
+        self._queue = Queue()
 
     def send(self, data):
         self._queue.put(data)
