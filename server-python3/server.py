@@ -124,7 +124,6 @@ def make_parser():
 
 
 def start(interface, port, root_app_handler):
-    args = make_parser().parse_args()
     conn = (interface, port)
     listener = eventlet.listen(conn)
     print('listening on {0}:{1}'.format(*conn))

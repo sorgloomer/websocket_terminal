@@ -1,5 +1,5 @@
 import subprocess
-import os
+import sys
 
 import eventlet.queue
 import eventlet.tpool
@@ -12,17 +12,11 @@ from .BaseTerminal import BaseTerminal
 import logging
 logger = logging.getLogger(__name__)
 
-OS_TERMINALS = {
-    'posix': ['bash'],
-    'nt': ['cmd']
-}
-
 
 class SubprocessTerminal(BaseTerminal):
     def __init__(self, cmd):
         self.process = make_simple_process(cmd)
         self.queue = eventlet.queue.Queue()
-        self.echo = True
         self.greenpool = self._start_consume()
 
     def _start_consume(self):
@@ -36,19 +30,49 @@ class SubprocessTerminal(BaseTerminal):
             data = stream.read()
             if not data:
                 break
-            self.queue.put(data)
+            self._send_to_slave(data)
 
     def recv(self, count=None):
-        return self.queue.get()
+        return self.master_to_slave(self.queue.get())
+
+    def _send_to_slave(self, data):
+        self.queue.put(data)
 
     def send(self, data):
-        data = terminal_encode(data)
-        if self.echo:
-            self.queue.put(data)
+        data = self.slave_to_master(data)
         self.process.stdin.write(data)
+
+    def slave_to_master(self, x):
+        return x
+
+    def master_to_slave(self, x):
+        return x
 
     def close(self):
         self.process.kill()
+
+
+class LinuxTerminal(SubprocessTerminal):
+    def __init__(self, cmd=None):
+        if cmd is None:
+            cmd = ['bash']
+        cmd = ['script', '-qfc'] + cmd + ['/dev/null']
+        super().__init__(cmd)
+
+
+class WindowsTerminal(SubprocessTerminal):
+    def __init__(self, cmd=None):
+        if cmd is None:
+            cmd = ['cmd']
+        super().__init__(cmd)
+
+    def slave_to_master(self, x):
+        x = x.replace(b'\r', b'\r\n')
+        self._send_to_slave(x)
+        return x
+
+    def master_to_slave(self, x):
+        return x
 
 
 class NonBlockingSimplePipe:
@@ -93,11 +117,7 @@ def is_greenpipe(obj):
 
 
 def os_terminal():
-    return SubprocessTerminal(OS_TERMINALS[os.name])
-
-
-def terminal_encode(binary: bytes):
-    return binary.replace(b'\r', b'\r\n')
+    return OS_TERMINALS[sys.platform]()
 
 
 def make_subprocess(obj):
@@ -120,3 +140,9 @@ def make_simple_process(obj):
         return obj
     proc = make_subprocess(obj)
     return NonBlockingSimpleProcess(proc)
+
+
+OS_TERMINALS = {
+    'linux': LinuxTerminal,
+    'win32': WindowsTerminal
+}

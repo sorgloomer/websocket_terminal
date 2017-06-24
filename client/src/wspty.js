@@ -1,6 +1,6 @@
 
 function WsptyClient() {
-  this._connection = null;
+    this._connection = null;
 };
 
 WsptyClient.prototype.connect = function(options) {
