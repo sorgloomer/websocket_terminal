@@ -56,7 +56,9 @@ class LinuxTerminal(SubprocessTerminal):
     def __init__(self, cmd=None):
         if cmd is None:
             cmd = ['bash']
-        cmd = ['script', '-qfc'] + cmd + ['/dev/null']
+        import shlex
+        cmd = " ".join(map(shlex.quote, cmd))
+        cmd = ['script', '-qfc', cmd, '/dev/null']
         super().__init__(cmd)
 
 
@@ -66,13 +68,13 @@ class WindowsTerminal(SubprocessTerminal):
             cmd = ['cmd']
         super().__init__(cmd)
 
-    def slave_to_master(self, x):
-        x = x.replace(b'\r', b'\r\n')
-        self._send_to_slave(x)
-        return x
+    def slave_to_master(self, data):
+        data = data.replace(b'\r', b'\r\n')
+        self._send_to_slave(data)
+        return data
 
     def master_to_slave(self, x):
-        return x
+        return x.replace(b'\n', b'\r\n')
 
 
 class NonBlockingSimplePipe:
